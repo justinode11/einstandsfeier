@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Zugriff nur mit dem geheimen Feier-Schlüssel aus dem Link (mind. 24 Zeichen).
+    // Ohne Schlüssel kann niemand Feiern auflisten oder finden.
+    match /events/{key}/{coll}/{id} {
+      allow read, write: if key.size() >= 24
+                         && coll in ['teams', 'players', 'results'];
+    }
+  }
+}

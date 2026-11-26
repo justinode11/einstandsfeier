@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Einstandsfeier – Wertung</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: Vereinsabend, freundlich-sportlich, so ruhig wie das Regelheft
+   IDEA: das Regelheft der Einstandsfeier als Wertungsbogen in der Hand
+   PICTURE: der Eingabebogen jeder Station und die Gesamtwertung mit Treppchen
+   COLOUR and TYPE: Indigo #2e2f8f, Gold #c8a24a, Creme #f6f3ea auf Weiß; Barlow Condensed + Source Sans 3
+   LAYOUT: eine Spalte, Indigo-Kopf mit Wappen im weißen Feld, goldene Linien, Tab-Leiste unten */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#11123a);--card:light-dark(#f6f3ea,#1c1e55);--ink:light-dark(#1c1c2a,#f2f0ea);--mute:light-dark(#5d5c6c,#b9b7cf);
+--indigo:#2e2f8f;--head:light-dark(#2e2f8f,#c9c9ff);--gold:#c8a24a;--line:light-dark(#e3dcc8,#34367a);--ok:#1f8a5b}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Source Sans 3",system-ui,sans-serif;overflow-x:clip;padding-bottom:86px}
+h1,h2,h3{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;text-transform:uppercase;line-height:1.05;margin:0;text-wrap:balance}
+.top{background:var(--indigo);color:#fff;border-bottom:4px solid var(--gold)}
+.top .in{max-width:720px;margin:0 auto;padding:18px max(4vw,14px);display:flex;align-items:center;gap:16px}
+.top .logo{background:#fff;padding:8px;flex:none;width:clamp(78px,22vw,104px)}
+.top .logo img{display:block;width:100%;height:auto}
+.top .t{border-left:2px solid var(--gold);padding-left:16px;min-width:0;flex:1}
+.top h1{font-size:clamp(24px,7.5vw,48px)}
+.top .rule{width:64px;height:3px;background:var(--gold);margin:8px 0}
+.top p{margin:0;font-size:14px;opacity:.9;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.dot{width:8px;height:8px;border-radius:50%;background:#e0b100;display:inline-block}.dot.live{background:#6fe0a8}
+main{max-width:720px;margin:0 auto;padding:6px max(4vw,14px) 20px}
+.view{display:none}.view.on{display:block}
+h2{font-size:32px;color:var(--head);margin:18px 0 6px}
+h2+.gl,.gl{height:3px;background:var(--gold);border:0;margin:0 0 14px}
+h3{font-size:22px;color:var(--head)}
+.card{background:var(--card);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.note{color:var(--mute);font-size:14px;margin:4px 0}
+.banner{background:var(--card);border-left:5px solid var(--gold);padding:10px 14px;font-size:14px;margin:12px 0;display:none}.banner.on{display:block}
+label{display:block;font-size:14px;color:var(--mute);margin:0 0 4px;font-weight:600}
+input,textarea{font:inherit;font-size:16px;width:100%;padding:10px 12px;border-radius:8px;border:2px solid var(--line);background:var(--bg);color:var(--ink);min-height:44px}
+input:focus,textarea:focus{border-color:var(--indigo);outline:none}
+:root[data-theme=dark] input:focus{border-color:var(--gold)}
+button{font:inherit;font-weight:700;min-height:44px;padding:0 16px;border-radius:8px;border:0;cursor:pointer;background:var(--indigo);color:#fff}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+a.btnlink{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:8px;background:var(--indigo);color:#fff;font-weight:700;text-decoration:none}
+button.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+button.gold{background:var(--gold);color:#1c1c2a}
+button.warn{background:transparent;color:#b3261e;border:2px solid #b3261e}
+button:disabled{opacity:.4;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row>.grow{flex:1 1 160px}
+.big{font-family:"Barlow Condensed",sans-serif;font-size:46px;line-height:1;color:var(--head)}
+.tabs{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);background:var(--indigo);border-top:3px solid var(--gold);padding:4px 4px calc(4px + env(safe-area-inset-bottom));z-index:5}
+.tabs[hidden]{display:none}
+.tabs button{background:transparent;color:#c9c9ef;font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;font-size:15px;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:58px;padding:4px;border-radius:0}
+.tabs button svg{width:24px;height:24px}
+.tabs button.on{color:#fff;box-shadow:inset 0 -3px 0 var(--gold)}
+.item{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}.item:first-child{border-top:0}
+.sw{width:12px;height:12px;border-radius:50%;flex:none;display:inline-block}
+.tcard{background:var(--card);border-radius:10px;padding:12px 14px 12px 18px;margin-bottom:10px;position:relative;overflow:hidden}
+.tcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--c,var(--gold))}
+.members{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.m{font-size:14px;background:var(--bg);border:1px solid var(--line);padding:2px 10px;border-radius:99px}
+.badge{width:30px;height:30px;border-radius:50%;background:var(--gold);color:#1c1c2a;display:grid;place-items:center;font-weight:700;flex:none;font-size:15px}
+.st{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);color:var(--ink);padding:12px 14px;border-radius:10px;margin-bottom:8px;min-height:64px}
+.st .nm{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;font-size:23px;color:var(--head);line-height:1}
+.st .sub{font-size:13px;color:var(--mute);font-weight:400}
+.st .prog{margin-left:auto;font-size:14px;color:var(--mute);white-space:nowrap}
+.back{background:transparent;color:var(--head);padding:0;min-height:36px;font-weight:600}
+.rules{background:var(--card);border-radius:10px;padding:12px 16px;margin:8px 0 14px;font-size:15px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.chips button{background:var(--card);color:var(--ink);border:2px solid transparent;display:flex;align-items:center;gap:8px;font-weight:600}
+.chips button.sel{border-color:var(--indigo);background:var(--bg)}
+:root[data-theme=dark] .chips button.sel{border-color:var(--gold)}
+.chips .ok{color:var(--ok);font-weight:700}
+.entry{background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:4px 14px}
+.prow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);flex-wrap:wrap}.prow:first-child{border-top:0}
+.prow .who{flex:1 1 110px;font-weight:600;overflow-wrap:anywhere}
+.prow .who small{display:block;font-weight:400;color:var(--mute);font-size:13px}
+.step{display:flex;align-items:center;gap:6px}
+.step button{width:44px;padding:0;font-size:22px}
+.step output{font-family:"Barlow Condensed",sans-serif;font-size:28px;min-width:40px;text-align:center}
+.pinput{width:96px;text-align:center;font-family:"Barlow Condensed",sans-serif;font-size:24px}
+.shots{display:flex;gap:6px;flex-wrap:wrap}
+.shot{width:44px;height:44px;padding:0;border-radius:50%;background:var(--card);color:var(--mute);border:2px solid var(--line);font-size:15px}
+.shot.v1{background:var(--gold);color:#1c1c2a;border-color:var(--gold)}
+.shot.v2{background:var(--indigo);color:#fff;border-color:var(--indigo)}
+.shot.hit{background:var(--ok);color:#fff;border-color:var(--ok)}
+.qgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:10px 0}
+.qgrid .shot{width:100%;border-radius:8px}
+.sum{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:14px 0 6px;border-top:3px solid var(--gold);margin-top:6px}
+.sum .big{font-size:52px}
+.legend{font-size:13px;color:var(--mute);display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:4px 0 8px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px}
+.podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end;margin:8px 0 18px}
+.pod{text-align:center}
+.pod .blk{background:var(--indigo);color:#fff;font-family:"Barlow Condensed",sans-serif;font-size:36px;display:grid;place-items:center;border-radius:8px 8px 0 0;border-top:4px solid var(--gold)}
+.pod .nm{font-weight:700;overflow-wrap:anywhere;font-size:15px}
+.pod .pp{font-family:"Barlow Condensed",sans-serif;color:var(--head);font-size:24px}
+.rk{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:2px 12px;align-items:center;background:var(--card);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.rk .n{font-family:"Barlow Condensed",sans-serif;font-size:30px;color:var(--mute);text-align:center}
+.rk .p{font-family:"Barlow Condensed",sans-serif;font-size:40px;color:var(--head);line-height:1;white-space:nowrap}
+.rk .p small{font-size:16px;color:var(--mute)}
+.rk.first{background:var(--indigo);color:#fff}.rk.first .n,.rk.first .p,.rk.first .p small{color:#fff}.rk.first .n{color:var(--gold)}
+.scroll{overflow-x:auto}
+table.res{width:100%;border-collapse:collapse;font-size:15px}
+table.res th{background:var(--indigo);color:#fff;font-weight:600;font-size:13px;text-transform:uppercase;padding:9px 7px;text-align:right;white-space:nowrap}
+table.res td{padding:9px 7px;border-bottom:1px solid var(--gold);text-align:right;white-space:nowrap}
+table.res td small{color:var(--mute);font-size:12px;display:block}
+table.res th:first-child,table.res td:first-child{text-align:left;white-space:normal;background:var(--card);min-width:92px}
+table.res th:first-child{background:var(--indigo)}
+table.res td.tot{font-family:"Barlow Condensed",sans-serif;font-size:22px;color:var(--head)}
+.empty{text-align:center;color:var(--mute);padding:24px 10px}
+.foot{background:var(--indigo);color:#fff;text-align:center;padding:18px;border-radius:10px;margin-top:18px}
+.foot h3{color:#fff}
+.reset{margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
+.reset button{width:100%}
+.modal{position:fixed;inset:0;z-index:30;background:rgba(17,18,58,.55);display:none;align-items:center;justify-content:center;padding:20px}
+.modal.on{display:flex}
+.modal .box{background:var(--bg);border-radius:12px;padding:20px;max-width:380px;width:100%;border-top:5px solid var(--gold)}
+.modal h3{margin-bottom:8px}
+.modal p{margin:0 0 16px}
+.modal .row button{flex:1}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <div class="logo"><img src="logo.png" alt="Wappen SG Freiensteinau"></div>
+  <div class="t"><h1>Einstandsfeier</h1><div class="rule"></div>
+    <p>SG Freiensteinau · <span class="dot" id="dot"></span><span id="status">Verbinde …</span></p></div>
+</div></header>
+
+<main id="main">
+  <div class="banner" id="banner"></div>
+
+  <section class="view" id="v-spieler">
+    <h2>1. Spieler eintragen</h2><div class="gl"></div>
+    <form class="card" id="plForm">
+      <label for="plNames">Namen – einer pro Zeile</label>
+      <textarea id="plNames" rows="4" maxlength="3000" placeholder="Anna&#10;Ben&#10;Chris"></textarea>
+      <div class="row" style="margin-top:10px"><button type="submit">Hinzufügen</button></div>
+    </form>
+    <div class="card row"><div class="grow"><div class="big" id="plCount">0</div><div class="note">Spieler eingetragen</div></div>
+      <button type="button" class="gold" data-go="losen">Weiter zum Losen</button></div>
+    <div class="card" id="plList"></div>
+    <div class="reset"><button type="button" class="warn" data-reset="players">Spieler zurücksetzen</button></div>
+  </section>
+
+  <section class="view" id="v-losen">
+    <h2>2. Teams losen</h2><div class="gl"></div>
+    <form class="card" id="drawForm">
+      <label for="perTeam">Spieler pro Team</label>
+      <div class="row"><input id="perTeam" type="number" inputmode="numeric" min="1" max="50" value="5" required style="width:96px">
+        <p class="note grow" id="drawInfo" style="margin:0"></p></div>
+      <div class="row" style="margin-top:12px"><button type="submit" id="drawBtn">Teams auslosen</button></div>
+    </form>
+    <div id="drawnTeams"></div>
+    <div class="reset"><button type="button" class="warn" data-reset="teams">Teams zurücksetzen</button></div>
+  </section>
+
+  <section class="view" id="v-punkte">
+    <div id="punkte"></div>
+  </section>
+
+  <section class="view" id="v-ergebnis">
+    <h2>Gesamtwertung</h2><div class="gl"></div>
+    <div id="podium"></div>
+    <div id="ranking"></div>
+    <h2>Alle Disziplinen</h2><div class="gl"></div>
+    <div class="scroll" id="resTable"></div>
+    <div class="reset" style="margin-bottom:14px"><button type="button" class="warn" data-reset="all">Alle Ergebnisse zurücksetzen</button></div>
+    <p class="note">Pro Disziplin: 1. Platz 10 · 2. Platz 8 · 3. Platz 6 · 4. Platz 4 · 5. Platz 2 Wertungspunkte. Bei Gleichstand werden die Punkte der betroffenen Plätze geteilt. Kleine Zahl = tatsächliches Ergebnis.</p>
+      </section>
+</main>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle"><div class="box">
+  <h3 id="mTitle"></h3><p id="mText"></p>
+  <div class="row"><button type="button" class="ghost" id="mNo">Nein</button><button type="button" class="warn" id="mYes" style="background:#b3261e;color:#fff">Ja</button></div>
+</div></div>
+
+<nav class="tabs" id="tabs" aria-label="Bereiche"></nav>
+
+<script type="module">
+import {openDb,eventKey,newKey} from "./storage.js";
+{
+const COLORS=['#e4002b','#f0a500','#1f8a5b','#00a3c4','#d6336c','#7a4dff','#8a5a00','#111111','#5b6b00','#c2410c'];
+const STATIONS=[
+ {id:'darts',name:'Darts',type:'num',per:9,max:540,unit:'Punkte',rules:'Jeder Spieler hat 9 Darts. Alle erzielten Punkte der Teammitglieder werden addiert.',extra:'wirft zusätzlich 9 Darts'},
+ {id:'bierpong',name:'Bierpong',type:'step',per:10,max:10,unit:'Treffer',rules:'Jeder Spieler hat 10 Würfe. Jeder getroffene Becher zählt 1 Punkt. Die Treffer aller Spieler werden addiert.',extra:'wirft zusätzlich 10-mal'},
+ {id:'quiz',name:'Fußballquiz',type:'quiz',per:15,unit:'richtig',rules:'15 Fragen pro Team, gemeinsam beantwortet. 1 Punkt pro richtiger Antwort, 0 für falsch oder nicht gegeben. Keine Handys oder Hilfsmittel.'},
+ {id:'fifa',name:'FIFA – Elfmeterschießen',short:'FIFA',type:'hits',per:5,unit:'Tore',rules:'Jeder Spieler schießt 5 Elfmeter gegen den CPU-Torwart. Jeder verwandelte Elfmeter zählt 1 Punkt. Gleiche Mannschaft, gleicher Schütze bzw. gleiche Schussbedingungen und gleicher Schwierigkeitsgrad.',extra:'schießt zusätzlich 5 Elfmeter'},
+ {id:'torwand',name:'Torwandschießen',short:'Torwand',type:'torwand',per:6,unit:'Punkte',rules:'Jeder Spieler hat 6 Schüsse. Unteres Loch 1 Punkt, oberes Loch 2 Punkte, daneben 0 Punkte. Die Punkte aller Spieler werden addiert.',extra:'schießt zusätzlich 6-mal'}];
+const PLACE=[10,8,6,4,2];
+const placePts=i=>i<PLACE.length?PLACE[i]:0;
+const ICON={spieler:'<path d="M9 8a3.5 3.5 0 1 0 0-.01M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5M19 8v6M16 11h6"/>',
+ losen:'<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="16" cy="16" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/>',
+ punkte:'<path d="M4 20h16M6 16l3-9 3 6 3-4 3 7"/>',
+ ergebnis:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/>'};
+const TABS=[['spieler','Spieler'],['losen','Losen'],['punkte','Punkte'],['ergebnis','Ergebnis']];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=v=>{const n=Number(v);return Number.isFinite(n)?n:0};
+const fmt=n=>String(Math.round(n*10)/10).replace('.',',');
+const S={teams:[],players:[],results:{},view:'spieler',station:null,team:null,armed:null,drawing:false};
+const pending={},busy={},timers={};
+let db=null;
+
+const byCreated=a=>[...a].sort((x,y)=>num(x.createdAt)-num(y.createdAt));
+const membersOf=id=>S.players.filter(p=>p.teamId===id).sort((a,b)=>num(a.createdAt)-num(b.createdAt));
+const maxSize=()=>Math.max(0,...S.teams.map(t=>membersOf(t.id).length));
+const sw=c=>`<span class="sw" style="background:${esc(c)}"></span>`;
+const rkey=(s,t)=>s+'__'+t;
+const getRes=(s,t)=>{const k=rkey(s,t);return k in pending?pending[k]:S.results[k]||null};
+
+/* Zeilen einer Station: Spieler + Zusatzrunden für kleinere Teams */
+function rowsFor(st,team){
+  if(st.type==='quiz')return [];
+  const mem=membersOf(team.id).map(p=>({id:p.id,label:p.name}));
+  const extra=Math.max(0,maxSize()-mem.length);
+  for(let i=0;i<extra;i++)mem.push({id:'extra'+(i+1),label:'Zusatzrunde'+(extra>1?' '+(i+1):''),sub:'Ein Spieler '+st.extra});
+  return mem;
+}
+function rowVal(st,v){
+  if(st.type==='num'||st.type==='step')return num(v);
+  if(Array.isArray(v))return v.reduce((s,x)=>s+num(x),0);
+  return 0;
+}
+function rawTotal(st,res){
+  if(!res)return 0;
+  if(st.type==='quiz')return (res.q||[]).filter(Boolean).length;
+  return Object.values(res.rows||{}).reduce((s,v)=>s+rowVal(st,v),0);
+}
+/* Wertung einer Disziplin: nur abgeschlossene Teams, geteilte Plätze bei Gleichstand */
+function stationRanking(st){
+  const done=S.teams.map(t=>({t,res:getRes(st.id,t.id)})).filter(x=>x.res&&x.res.done).map(x=>({t:x.t,raw:rawTotal(st,x.res)}));
+  done.sort((a,b)=>b.raw-a.raw);
+  const out={};let i=0;
+  while(i<done.length){let j=i;while(j+1<done.length&&done[j+1].raw===done[i].raw)j++;
+    let sum=0;for(let k=i;k<=j;k++)sum+=placePts(k);
+    for(let k=i;k<=j;k++)out[done[k].t.id]={place:i+1,pts:sum/(j-i+1),raw:done[k].raw};i=j+1}
+  return out;
+}
+function overall(){
+  const per=STATIONS.map(st=>stationRanking(st));
+  const rows=S.teams.map(t=>({t,per:per.map(r=>r[t.id]||null),total:per.reduce((s,r)=>s+(r[t.id]?.pts||0),0)})).sort((a,b)=>b.total-a.total);
+  let prev=null,rank=0;rows.forEach((r,i)=>{if(r.total!==prev){rank=i+1;prev=r.total}r.rank=rank});return rows;
+}
+
+/* Render */
+function renderPlayers(){
+  $('plCount').textContent=S.players.length;
+  const el=$('plList');
+  if(!S.players.length){el.innerHTML='<div class="empty">Noch niemand eingetragen.</div>';return}
+  el.innerHTML=[...S.players].sort((a,b)=>String(a.name).localeCompare(String(b.name),'de')).map(p=>{const t=S.teams.find(x=>x.id===p.teamId);
+    return `<div class="item"><div style="flex:1"><b>${esc(p.name)}</b>${t?`<div class="note" style="margin:0">${sw(t.color)} ${esc(t.name)}</div>`:''}</div>
+    <button type="button" class="warn" data-delp="${esc(p.id)}">${S.armed==='p'+p.id?'Sicher?':'Entfernen'}</button></div>`}).join('');
+}
+function drawPlan(){const n=S.players.length,k=Math.max(1,Math.round(num($('perTeam').value)));return {n,k,teams:n?Math.ceil(n/k):0}}
+function renderDraw(){
+  const {n,k,teams}=drawPlan();
+  let info='Erst Spieler eintragen.';
+  if(n){const s=Math.floor(n/teams),b=Math.ceil(n/teams);info=`${n} Spieler → ${teams} ${teams===1?'Team':'Teams'} mit ${s===b?b:s+' bis '+b} Spielern.`+(teams!==5?' Der Ablaufplan ist für 5 Teams gedacht.':'')}
+  $('drawInfo').textContent=info;
+  const b=$('drawBtn');b.disabled=!n||S.drawing;
+  b.textContent=S.drawing?'Lose …':(S.armed==='draw'?'Sicher? Alle Ergebnisse werden gelöscht':(S.teams.length?'Neu auslosen':'Teams auslosen'));
+  b.className=S.armed==='draw'?'warn':'';
+  $('drawnTeams').innerHTML=S.teams.length?S.teams.map(t=>`<div class="tcard" style="--c:${esc(t.color)}"><h3>${esc(t.name)}</h3>
+    <div class="members">${membersOf(t.id).map(p=>`<span class="m">${esc(p.name)}</span>`).join('')||'<span class="note">Keine Spieler</span>'}</div></div>`).join('')
+    +'<div class="row"><button type="button" class="gold" data-go="punkte">Weiter zu den Stationen</button></div>':'';
+}
+
+function renderPunkte(){
+  const el=$('punkte');
+  const st=STATIONS.find(s=>s.id===S.station);
+  if(!st){
+    el.innerHTML=`<h2>3. Punkte eintragen</h2><div class="gl"></div><p class="note" style="margin-bottom:12px">Station wählen:</p>`+
+      STATIONS.map((s,i)=>{const d=S.teams.filter(t=>getRes(s.id,t.id)?.done).length;
+        return `<button type="button" class="st" data-st="${s.id}"><span class="badge">${i+1}</span><span><span class="nm">${esc(s.name)}</span><br><span class="sub">${esc(s.rules.split('.')[0])}.</span></span><span class="prog">${d}/${S.teams.length} ✓</span></button>`}).join('')
+      +(S.teams.length?'':'<div class="empty card">Erst Teams losen.</div>');
+    return;
+  }
+  const idx=STATIONS.indexOf(st);
+  if(!S.teams.some(t=>t.id===S.team))S.team=null;
+  let html=`<button type="button" class="back" data-st="">‹ Alle Stationen</button>
+    <h2 style="margin-top:6px">${idx+1}. ${esc(st.name)}</h2><div class="gl"></div>
+    <div class="rules">${esc(st.rules)}</div>
+    <label>Team wählen</label>
+    <div class="chips">${S.teams.map(t=>{const r=getRes(st.id,t.id);return `<button type="button" data-team="${esc(t.id)}" class="${t.id===S.team?'sel':''}">${sw(t.color)}${esc(t.name)}${r?.done?' <span class="ok">✓</span>':''}</button>`}).join('')||'<span class="note">Erst Teams losen.</span>'}</div>`;
+  const team=S.teams.find(t=>t.id===S.team);
+  if(team){
+    const res=getRes(st.id,team.id)||{};
+    html+=`<div class="entry">`;
+    if(st.type==='quiz'){
+      const q=res.q||[];
+      html+=`<p class="note" style="margin-top:10px">Tippe jede richtig beantwortete Frage an.</p><div class="qgrid">${Array.from({length:15},(_,i)=>`<button type="button" class="shot${q[i]?' hit':''}" data-q="${i}" aria-pressed="${!!q[i]}" aria-label="Frage ${i+1}">${i+1}</button>`).join('')}</div>`;
+    }else{
+      if(st.type==='torwand')html+=`<div class="legend" style="margin-top:10px">Antippen wechselt: <span><i style="background:var(--card);border:2px solid var(--line)"></i>daneben 0</span><span><i style="background:var(--gold)"></i>unten 1</span><span><i style="background:var(--indigo)"></i>oben 2</span></div>`;
+      if(st.type==='hits')html+=`<div class="legend" style="margin-top:10px">Verwandelte Elfmeter antippen.</div>`;
+      html+=rowsFor(st,team).map(r=>{const v=(res.rows||{})[r.id];const who=`<div class="who">${esc(r.label)}${r.sub?`<small>${esc(r.sub)}</small>`:''}</div>`;
+        if(st.type==='num')return `<div class="prow">${who}<input class="pinput" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="3" id="in-${esc(r.id)}" data-row="${esc(r.id)}" value="${v==null?'':num(v)}" placeholder="0" aria-label="Punkte ${esc(r.label)}"></div>`;
+        if(st.type==='step')return `<div class="prow">${who}<div class="step"><button type="button" class="ghost" data-row="${esc(r.id)}" data-d="-1" aria-label="weniger">−</button><output>${num(v)}</output><button type="button" data-row="${esc(r.id)}" data-d="1" aria-label="mehr">+</button></div></div>`;
+        const arr=Array.isArray(v)?v:[];
+        return `<div class="prow">${who}<div class="shots">${Array.from({length:st.per},(_,i)=>{const x=num(arr[i]);
+          return st.type==='hits'?`<button type="button" class="shot${x?' hit':''}" data-row="${esc(r.id)}" data-i="${i}" aria-pressed="${!!x}" aria-label="Elfmeter ${i+1}">${x?'Tor':i+1}</button>`
+          :`<button type="button" class="shot v${x}" data-row="${esc(r.id)}" data-i="${i}" aria-label="Schuss ${i+1}">${x}</button>`}).join('')}</div></div>`}).join('');
+    }
+    const tot=rawTotal(st,res);
+    html+=`<div class="sum"><span>Ergebnis ${esc(team.name)}</span><span class="big" id="sumVal">${tot}</span></div>
+      <div class="row" style="padding:8px 0 12px">${res.done?`<span class="ok grow" style="font-weight:700">✓ Abgeschlossen – zählt in der Wertung</span><button type="button" class="ghost" data-done="0">Wieder öffnen</button>`
+        :`<button type="button" class="gold grow" data-done="1">Ergebnis abschließen</button>`}</div></div>`;
+  }else if(S.teams.length)html+='<p class="note">Wähle das Team, das gerade an dieser Station spielt.</p>';
+  html+=`<div class="reset"><button type="button" class="warn" data-reset="station">Ergebnisse ${esc(st.short||st.name)} zurücksetzen</button></div>`;
+  const focus=document.activeElement?.id;
+  el.innerHTML=html;
+  if(focus&&focus.startsWith('in-')){const f=$(focus);if(f){f.focus();try{const l=f.value.length;f.setSelectionRange(l,l)}catch(e){}}}
+}
+
+function renderErgebnis(){
+  const rows=overall();
+  if(!rows.length){$('podium').innerHTML='';$('ranking').innerHTML='<div class="empty card">Noch keine Teams.</div>';$('resTable').innerHTML='';return}
+  const top=rows.slice(0,3),hts={1:116,2:84,3:60};
+  $('podium').innerHTML=rows.some(r=>r.total)?`<div class="podium">${[1,0,2].filter(i=>top[i]).map(i=>{const r=top[i];return `<div class="pod"><div class="nm">${sw(r.t.color)} ${esc(r.t.name)}</div><div class="pp">${fmt(r.total)}</div><div class="blk" style="height:${hts[r.rank]||60}px">${r.rank}</div></div>`}).join('')}</div>`:'';
+  $('ranking').innerHTML=rows.map(r=>{const n=r.per.filter(Boolean).length;return `<div class="rk${r.rank===1&&r.total>0?' first':''}"><div class="n">${r.rank}</div>
+    <div><b>${sw(r.t.color)} ${esc(r.t.name)}</b><div class="note" style="margin:0;${r.rank===1&&r.total>0?'color:#dcdcff':''}">${n} von ${STATIONS.length} Disziplinen gewertet</div></div>
+    <div class="p">${fmt(r.total)} <small>Pkt.</small></div></div>`}).join('');
+  $('resTable').innerHTML=`<table class="res"><thead><tr><th>Team</th>${STATIONS.map(s=>`<th>${esc(s.short||s.name)}</th>`).join('')}<th>Gesamt</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr><td>${sw(r.t.color)} ${esc(r.t.name)}</td>${r.per.map(p=>p?`<td>${fmt(p.pts)}<small>${p.raw}</small></td>`:'<td>–</td>').join('')}<td class="tot">${fmt(r.total)}</td></tr>`).join('')}</tbody></table>`;
+}
+
+function renderTabs(){$('tabs').innerHTML=TABS.map(([v,l])=>`<button type="button" data-go="${v}" class="${v===S.view?'on':''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON[v]}</svg>${l}</button>`).join('')}
+function render(){
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+S.view));
+  renderTabs();renderPlayers();renderDraw();renderPunkte();renderErgebnis();
+}
+
+function banner(msg){const b=$('banner');b.textContent=msg||'';b.classList.toggle('on',!!msg)}
+function showSetup(){
+  const k=newKey(),url=location.origin+location.pathname+'?k='+k;
+  $('main').innerHTML=`<h2>Feier-Link fehlt</h2><div class="gl"></div><div class="card"><p style="margin-top:0">Diese App funktioniert nur über den geheimen Feier-Link. Wer den Link hat, kann eintragen – deshalb nur an die Teamleitung schicken.</p>
+    <p class="note">Neuer Link für eure Feier:</p><p style="overflow-wrap:anywhere;font-weight:700">${esc(url)}</p>
+    <div class="row"><a href="${esc(url)}" class="btnlink">Diesen Link öffnen</a><button type="button" class="ghost" id="cp">Link kopieren</button></div></div>`;
+  $('cp').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(url);$('cp').textContent='Kopiert ✓'}catch(e){}});
+  $('tabs').hidden=true;
+}
+function fail(e){
+  if(e&&(e.code==='permission-denied'||e.code==='invalid_argument'))banner('Keine Berechtigung. Prüfe, ob du den vollständigen Feier-Link geöffnet hast.');
+  else if(e&&e.code==='quota_exceeded')banner('Der Speicher ist voll.');
+  else banner('Speichern hat nicht geklappt. Bitte gleich nochmal versuchen.');
+}
+async function w(fn){if(!db){banner('Keine Verbindung zum Datenspeicher.');return false}try{await fn();return true}catch(e){fail(e);return false}}
+
+/* Speichern: ganzes Ergebnis-Dokument je Station+Team, entprellt */
+async function flush(k){
+  if(busy[k])return;busy[k]=true;
+  while(k in pending){const v=pending[k];
+    try{await db.collection('results').doc(k).set(v)}catch(e){fail(e);delete pending[k];break}
+    if(pending[k]===v)delete pending[k]}
+  busy[k]=false;
+}
+function saveRes(mut,now,quiet){
+  const st=STATIONS.find(s=>s.id===S.station),k=rkey(S.station,S.team);
+  const cur=getRes(S.station,S.team)||{};
+  const next={station:S.station,teamId:S.team,rows:JSON.parse(JSON.stringify(cur.rows||{})),q:[...(cur.q||[])],done:!!cur.done};
+  mut(next);next.total=rawTotal(st,next);next.updatedAt=Date.now();
+  pending[k]=next;clearTimeout(timers[k]);
+  if(now)flush(k);else timers[k]=setTimeout(()=>flush(k),400);
+  if(quiet){const s=$('sumVal');if(s)s.textContent=next.total}else renderPunkte();
+  renderErgebnis();
+}
+
+const valid=v=>TABS.some(t=>t[0]===v);
+function go(v){if(!valid(v))return;S.view=v;S.armed=null;try{history.replaceState(null,'','#'+v)}catch(e){}render();window.scrollTo(0,0)}
+{const h=location.hash.slice(1);if(valid(h))S.view=h}
+window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(valid(h)&&h!==S.view){S.view=h;render()}});
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+async function doDraw(){
+  const {n,teams}=drawPlan();if(!n)return;
+  S.drawing=true;S.armed=null;S.team=null;renderDraw();
+  await w(async()=>{
+    for(const k of Object.keys(S.results))await db.collection('results').doc(k).delete();
+    for(const t of S.teams)await db.collection('teams').doc(t.id).delete();
+    const order=shuffle([...S.players]);const now=Date.now();const ids=[];
+    for(let i=0;i<teams;i++){const ref=db.collection('teams').doc();ids.push(ref.id);
+      await ref.set({name:'Team '+(i+1),color:COLORS[i%COLORS.length],createdAt:now+i})}
+    for(let i=0;i<order.length;i++)await db.collection('players').doc(order[i].id).update({teamId:ids[i%teams]});
+  });
+  S.drawing=false;renderDraw();
+}
+
+let onYes=null,lastFocus=null;
+function ask(title,text,fn){onYes=fn;lastFocus=document.activeElement;$('mTitle').textContent=title;$('mText').textContent=text;$('modal').classList.add('on');$('mNo').focus()}
+function closeAsk(){$('modal').classList.remove('on');onYes=null;try{lastFocus&&lastFocus.focus()}catch(e){}}
+$('mNo').addEventListener('click',closeAsk);
+$('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeAsk()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('modal').classList.contains('on'))closeAsk()});
+$('mYes').addEventListener('click',()=>{const f=onYes;closeAsk();if(f)f()});
+const delResults=keys=>w(async()=>{for(const k of keys){delete pending[k];clearTimeout(timers[k]);await db.collection('results').doc(k).delete()}});
+function doReset(kind){
+  if(kind==='station'){const st=STATIONS.find(s=>s.id===S.station);if(!st)return;
+    ask('Station zurücksetzen?',`Alle Ergebnisse bei „${st.name}“ werden für alle Teams gelöscht.`,()=>delResults(Object.keys(S.results).filter(k=>k.startsWith(st.id+'__'))))}
+  if(kind==='all')ask('Alle Ergebnisse zurücksetzen?','Die Ergebnisse aller fünf Stationen werden gelöscht. Teams und Spieler bleiben.',()=>delResults(Object.keys(S.results)));
+  if(kind==='teams')ask('Teams zurücksetzen?','Alle Teams und alle Ergebnisse werden gelöscht. Die Spieler bleiben eingetragen und können neu gelost werden.',()=>w(async()=>{
+    for(const k of Object.keys(S.results))await db.collection('results').doc(k).delete();
+    for(const t of S.teams)await db.collection('teams').doc(t.id).delete();
+    for(const p of S.players)if(p.teamId)await db.collection('players').doc(p.id).update({teamId:null});S.team=null}));
+  if(kind==='players')ask('Spieler zurücksetzen?','Alle Spieler, alle Teams und alle Ergebnisse werden gelöscht. Danach ist die App leer.',()=>w(async()=>{
+    for(const k of Object.keys(S.results))await db.collection('results').doc(k).delete();
+    for(const t of S.teams)await db.collection('teams').doc(t.id).delete();
+    for(const p of S.players)await db.collection('players').doc(p.id).delete();S.team=null}));
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+  if(d.go){go(d.go);return}
+  if(d.reset){doReset(d.reset);return}
+  if('st' in d){S.station=d.st||null;S.team=null;renderPunkte();window.scrollTo(0,0);return}
+  if(d.team){S.team=S.team===d.team?null:d.team;renderPunkte();return}
+  if(d.delp){if(S.armed!=='p'+d.delp){S.armed='p'+d.delp;renderPlayers();return}S.armed=null;const id=d.delp;w(()=>db.collection('players').doc(id).delete());return}
+  if(!S.station||!S.team)return;
+  const st=STATIONS.find(s=>s.id===S.station);
+  if('q' in d){const i=num(d.q);saveRes(r=>{while(r.q.length<15)r.q.push(false);r.q[i]=!r.q[i]});return}
+  if(d.d&&d.row){saveRes(r=>{r.rows[d.row]=Math.min(st.max,Math.max(0,num(r.rows[d.row])+num(d.d)))});return}
+  if('i' in d&&d.row){const i=num(d.i);saveRes(r=>{const a=Array.isArray(r.rows[d.row])?[...r.rows[d.row]]:[];while(a.length<st.per)a.push(0);
+    a[i]=st.type==='torwand'?(num(a[i])+1)%3:(a[i]?0:1);r.rows[d.row]=a});return}
+  if('done' in d){saveRes(r=>{r.done=d.done==='1'},true);return}
+});
+document.addEventListener('input',e=>{const t=e.target;
+  if(t.id==='perTeam'){S.armed=null;renderDraw()}
+  if(t.matches('#punkte input[data-row]')){const st=STATIONS.find(s=>s.id===S.station);const clean=t.value.replace(/\D/g,'').slice(0,3);if(clean!==t.value)t.value=clean;
+    const v=clean===''?null:Math.min(st.max,num(clean));saveRes(r=>{if(v==null)delete r.rows[t.dataset.row];else r.rows[t.dataset.row]=v},false,true)}
+});
+
+document.addEventListener('focusout',e=>{const t=e.target;if(t.matches&&t.matches('#punkte input[data-row]')){const st=STATIONS.find(s=>s.id===S.station);if(st&&t.value!==''&&num(t.value)>st.max)t.value=st.max}});
+$('plForm').addEventListener('submit',e=>{e.preventDefault();
+  const have=new Set(S.players.map(p=>String(p.name).toLowerCase()));
+  const names=[...new Set($('plNames').value.split(/[\n,;]+/).map(s=>s.trim().slice(0,40)).filter(Boolean))].filter(n=>!have.has(n.toLowerCase()));
+  $('plNames').value='';if(!names.length)return;
+  w(async()=>{const now=Date.now();for(let i=0;i<names.length;i++)await db.collection('players').add({name:names[i],teamId:null,createdAt:now+i})});
+});
+$('drawForm').addEventListener('submit',e=>{e.preventDefault();if(S.drawing)return;
+  if(S.teams.length&&S.armed!=='draw'){S.armed='draw';renderDraw();return}doDraw()});
+
+render();
+
+(async()=>{
+  const status=(t,live)=>{$('status').textContent=t;$('dot').classList.toggle('live',!!live)};
+  const tm=setTimeout(()=>status('Daten noch nicht erreichbar'),10000);
+  if(!eventKey()){clearTimeout(tm);status('Kein Feier-Link');showSetup();return}
+  try{db=await openDb()}catch(e){db=null;console.error(e)}
+  if(!db){clearTimeout(tm);status('Offline');banner('Der Datenspeicher ist nicht erreichbar. Ist firebase-config.js ausgefüllt?');return}
+  const ok=snap=>{if(!snap.metadata.fromCache){clearTimeout(tm);status('Live',true)}};
+  const err=e=>{clearTimeout(tm);status(e&&e.code==='revoked'?'Kein Zugriff mehr':'Verbindung unterbrochen')};
+  const docs=snap=>snap.docs.map(d=>({id:d.id,...d.data()}));
+  const lazy=fn=>{let r=0;return()=>{if(r)return;r=requestAnimationFrame(()=>{r=0;fn()})}};
+  const re=lazy(render),reR=lazy(()=>{if(document.activeElement?.matches?.('#punkte input')){renderErgebnis();return}renderPunkte();renderErgebnis()});
+  db.collection('teams').onSnapshot(s=>{S.teams=byCreated(docs(s));ok(s);re()},err);
+  db.collection('players').onSnapshot(s=>{S.players=byCreated(docs(s));ok(s);re()},err);
+  db.collection('results').onSnapshot(s=>{const m={};s.docs.forEach(d=>m[d.id]=d.data());S.results=m;ok(s);reR()},err);
+})();
+}
+</script>
+</body>
+</html>
