@@ -27,3 +27,19 @@ Nur die Teamleitung nutzt die App; keine Rollen, keine Anmeldung.
 
 ## Lokal testen
 `python3 -m http.server 8000` → http://localhost:8000
+
+## Veröffentlichung (GitHub Pages + Firebase)
+- Repository: https://github.com/justinode11/einstandsfeier (öffentlich, Branch `main`, Pages aus `/` root)
+- Live-Adresse: https://justinode11.github.io/einstandsfeier/  (ohne `?k=` zeigt die App einen neuen Feier-Link an)
+- Ordner mit GitHub verbinden: `git remote add origin https://github.com/justinode11/einstandsfeier.git` (falls noch nicht gesetzt),
+  `git fetch origin`, dann lokale Änderungen mit origin/main zusammenführen – lokale Arbeit NICHT mit reset --hard überschreiben.
+- Veröffentlichen: `git add -A && git commit -m "…" && git push` → Pages baut in ca. 1 Minute neu.
+  Browser/Handys cachen Dateien bis zu 10 Minuten; zum Prüfen neu laden bzw. Cache leeren.
+- Prüfen: `curl -sI https://justinode11.github.io/einstandsfeier/` (HTTP 200) und
+  `curl -s https://justinode11.github.io/einstandsfeier/firebase-config.js | grep projectId`.
+- Firebase-Projekt: `einstandsfeier-sgf` (Firestore, europe-west3, Spark-Tarif), Konsole:
+  https://console.firebase.google.com/project/einstandsfeier-sgf
+  Regeln stehen in `firestore.rules`; Änderungen dort in der Konsole unter Firestore → Regeln veröffentlichen
+  (oder per Firebase-CLI: `firebase deploy --only firestore:rules --project einstandsfeier-sgf`).
+- `firebase-config.js` MUSS die echten Werte enthalten (nicht "HIER_EINTRAGEN"), sonst läuft die App im Testmodus.
+- Der geheime Feier-Link steht nur lokal in `FEIER-LINK.txt` (in .gitignore) – NIE committen, nicht in README/CLAUDE.md schreiben.

@@ -108,6 +108,9 @@ table.res td{padding:9px 7px;border-bottom:1px solid var(--gold);text-align:righ
 table.res td small{color:var(--mute);font-size:12px;display:block}
 table.res th:first-child,table.res td:first-child{text-align:left;white-space:normal;background:var(--card);min-width:92px}
 table.res th:first-child{background:var(--indigo)}
+table.rot th,table.rot td{text-align:left;padding:9px 6px}
+table.rot td:first-child{min-width:0;text-align:center;font-weight:700}
+table.rot td.ok{color:var(--ok);font-weight:700}
 table.res td.tot{font-family:"Barlow Condensed",sans-serif;font-size:22px;color:var(--head)}
 .empty{text-align:center;color:var(--mute);padding:24px 10px}
 .foot{background:var(--indigo);color:#fff;text-align:center;padding:18px;border-radius:10px;margin-top:18px}
@@ -186,7 +189,7 @@ const COLORS=['#e4002b','#f0a500','#1f8a5b','#00a3c4','#d6336c','#7a4dff','#8a5a
 const STATIONS=[
  {id:'darts',name:'Darts',type:'num',per:9,max:540,unit:'Punkte',rules:'Jeder Spieler hat 9 Darts. Alle erzielten Punkte der Teammitglieder werden addiert.',extra:'wirft zusätzlich 9 Darts'},
  {id:'bierpong',name:'Bierpong',type:'step',per:10,max:10,unit:'Treffer',rules:'Jeder Spieler hat 10 Würfe. Jeder getroffene Becher zählt 1 Punkt. Die Treffer aller Spieler werden addiert.',extra:'wirft zusätzlich 10-mal'},
- {id:'quiz',name:'Fußballquiz',type:'quiz',per:15,unit:'richtig',rules:'15 Fragen pro Team, gemeinsam beantwortet. 1 Punkt pro richtiger Antwort, 0 für falsch oder nicht gegeben. Keine Handys oder Hilfsmittel.'},
+ {id:'quiz',name:'Fußballquiz',short:'Quiz',type:'quiz',per:15,unit:'richtig',rules:'15 Fragen pro Team, gemeinsam beantwortet. 1 Punkt pro richtiger Antwort, 0 für falsch oder nicht gegeben. Keine Handys oder Hilfsmittel.'},
  {id:'fifa',name:'FIFA – Elfmeterschießen',short:'FIFA',type:'hits',per:5,unit:'Tore',rules:'Jeder Spieler schießt 5 Elfmeter gegen den CPU-Torwart. Jeder verwandelte Elfmeter zählt 1 Punkt. Gleiche Mannschaft, gleicher Schütze bzw. gleiche Schussbedingungen und gleicher Schwierigkeitsgrad.',extra:'schießt zusätzlich 5 Elfmeter'},
  {id:'torwand',name:'Torwandschießen',short:'Torwand',type:'torwand',per:6,unit:'Punkte',rules:'Jeder Spieler hat 6 Schüsse. Unteres Loch 1 Punkt, oberes Loch 2 Punkte, daneben 0 Punkte. Die Punkte aller Spieler werden addiert.',extra:'schießt zusätzlich 6-mal'}];
 const PLACE=[10,8,6,4,2];
@@ -200,7 +203,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num=v=>{const n=Number(v);return Number.isFinite(n)?n:0};
 const fmt=n=>String(Math.round(n*10)/10).replace('.',',');
-const S={teams:[],players:[],results:{},view:'spieler',station:null,team:null,armed:null,drawing:false};
+const S={teams:[],players:[],results:{},view:'spieler',station:null,team:null,armed:null,drawing:false,editTeam:null,editDraft:''};
 const pending={},busy={},timers={};
 let db=null;
 
@@ -220,14 +223,17 @@ function rowsFor(st,team){
   return mem;
 }
 function rowVal(st,v){
-  if(st.type==='num'||st.type==='step')return num(v);
-  if(Array.isArray(v))return v.reduce((s,x)=>s+num(x),0);
+  if(st.type==='num'||st.type==='step')return Math.min(st.max,Math.max(0,num(v)));
+  if(Array.isArray(v))return v.slice(0,st.per).reduce((s,x)=>s+(st.type==='torwand'?Math.min(2,Math.max(0,num(x))):(x?1:0)),0);
   return 0;
 }
+/* Nur Zeilen zählen, die es im Team aktuell gibt (z. B. nicht mehr die eines entfernten Spielers) */
 function rawTotal(st,res){
   if(!res)return 0;
-  if(st.type==='quiz')return (res.q||[]).filter(Boolean).length;
-  return Object.values(res.rows||{}).reduce((s,v)=>s+rowVal(st,v),0);
+  if(st.type==='quiz')return (res.q||[]).slice(0,st.per).filter(Boolean).length;
+  const rows=res.rows||{},team=S.teams.find(t=>t.id===res.teamId);
+  const ids=team?rowsFor(st,team).map(r=>r.id):Object.keys(rows);
+  return ids.reduce((s,id)=>s+rowVal(st,rows[id]),0);
 }
 /* Wertung einer Disziplin: nur abgeschlossene Teams, geteilte Plätze bei Gleichstand */
 function stationRanking(st){
@@ -263,9 +269,37 @@ function renderDraw(){
   const b=$('drawBtn');b.disabled=!n||S.drawing;
   b.textContent=S.drawing?'Lose …':(S.armed==='draw'?'Sicher? Alle Ergebnisse werden gelöscht':(S.teams.length?'Neu auslosen':'Teams auslosen'));
   b.className=S.armed==='draw'?'warn':'';
-  $('drawnTeams').innerHTML=S.teams.length?S.teams.map(t=>`<div class="tcard" style="--c:${esc(t.color)}"><h3>${esc(t.name)}</h3>
+  if(S.editTeam&&!S.teams.some(t=>t.id===S.editTeam))S.editTeam=null;
+  const hadFocus=document.activeElement?.id==='tnIn';
+  $('drawnTeams').innerHTML=S.teams.length?S.teams.map(t=>`<div class="tcard" style="--c:${esc(t.color)}">${S.editTeam===t.id
+    ?`<form class="row" id="tnForm"><input id="tnIn" class="grow" maxlength="30" value="${esc(S.editDraft)}" aria-label="Neuer Name für ${esc(t.name)}" autocomplete="off"><button type="submit">Speichern</button><button type="button" class="ghost" data-renx="1">Abbrechen</button></form>`
+    :`<div class="row"><h3 class="grow">${esc(t.name)}</h3><button type="button" class="ghost" data-ren="${esc(t.id)}" style="min-height:36px;padding:0 12px;font-size:14px">Umbenennen</button></div>`}
     <div class="members">${membersOf(t.id).map(p=>`<span class="m">${esc(p.name)}</span>`).join('')||'<span class="note">Keine Spieler</span>'}</div></div>`).join('')
     +'<div class="row"><button type="button" class="gold" data-go="punkte">Weiter zu den Stationen</button></div>':'';
+  if(hadFocus){const f=$('tnIn');if(f){f.focus();const l=f.value.length;try{f.setSelectionRange(l,l)}catch(e){}}}
+}
+function saveTeamName(){
+  const id=S.editTeam,t=S.teams.find(x=>x.id===id);if(!t)return;
+  const name=String(S.editDraft||'').replace(/\s+/g,' ').trim().slice(0,30);
+  S.editTeam=null;renderDraw();
+  if(!name||name===t.name)return;
+  t.name=name;render();
+  w(()=>db.collection('teams').doc(id).update({name}));
+}
+
+/* Rotationsplan aus dem Regelheft: Team j spielt in Runde r die Station ROT[(j+r) % 5] */
+const ROT=['darts','fifa','quiz','torwand','bierpong'];
+function rotationHtml(){
+  const T=S.teams;
+  let h='<h2>Rotationsplan</h2><div class="gl"></div>';
+  if(T.length>ROT.length)return h+`<p class="note">Der Rotationsplan aus dem Regelheft ist für höchstens ${ROT.length} Teams gedacht. Bei ${T.length} Teams bitte die Reihenfolge vor Ort absprechen.</p>`;
+  h+=`<p class="note" style="margin-bottom:8px">Jedes Team spielt jede Station genau einmal, eine Runde dauert etwa 15 Minuten. ✓ = Ergebnis abgeschlossen.</p>
+    <div class="scroll"><table class="res rot"><thead><tr><th>Runde</th>${T.map(t=>`<th>${sw(t.color)} ${esc(t.name)}</th>`).join('')}</tr></thead><tbody>`;
+  for(let r=0;r<ROT.length;r++){
+    h+=`<tr><td>${r+1}</td>${T.map((t,j)=>{const s=STATIONS.find(x=>x.id===ROT[(j+r)%ROT.length]);const d=getRes(s.id,t.id)?.done;
+      return `<td${d?' class="ok"':''}>${esc(s.short||s.name)}${d?' ✓':''}</td>`}).join('')}</tr>`;
+  }
+  return h+'</tbody></table></div>';
 }
 
 function renderPunkte(){
@@ -275,7 +309,7 @@ function renderPunkte(){
     el.innerHTML=`<h2>3. Punkte eintragen</h2><div class="gl"></div><p class="note" style="margin-bottom:12px">Station wählen:</p>`+
       STATIONS.map((s,i)=>{const d=S.teams.filter(t=>getRes(s.id,t.id)?.done).length;
         return `<button type="button" class="st" data-st="${s.id}"><span class="badge">${i+1}</span><span><span class="nm">${esc(s.name)}</span><br><span class="sub">${esc(s.rules.split('.')[0])}.</span></span><span class="prog">${d}/${S.teams.length} ✓</span></button>`}).join('')
-      +(S.teams.length?'':'<div class="empty card">Erst Teams losen.</div>');
+      +(S.teams.length?rotationHtml():'<div class="empty card">Erst Teams losen.</div>');
     return;
   }
   const idx=STATIONS.indexOf(st);
@@ -412,6 +446,8 @@ document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;const d=b.dataset;
   if(d.go){go(d.go);return}
   if(d.reset){doReset(d.reset);return}
+  if(d.ren){const t=S.teams.find(x=>x.id===d.ren);if(!t)return;S.editTeam=t.id;S.editDraft=t.name;renderDraw();const f=$('tnIn');if(f){f.focus();f.select()}return}
+  if(d.renx){S.editTeam=null;renderDraw();return}
   if('st' in d){S.station=d.st||null;S.team=null;renderPunkte();window.scrollTo(0,0);return}
   if(d.team){S.team=S.team===d.team?null:d.team;renderPunkte();return}
   if(d.delp){if(S.armed!=='p'+d.delp){S.armed='p'+d.delp;renderPlayers();return}S.armed=null;const id=d.delp;w(()=>db.collection('players').doc(id).delete());return}
@@ -425,6 +461,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('input',e=>{const t=e.target;
   if(t.id==='perTeam'){S.armed=null;renderDraw()}
+  if(t.id==='tnIn')S.editDraft=t.value;
   if(t.matches('#punkte input[data-row]')){const st=STATIONS.find(s=>s.id===S.station);const clean=t.value.replace(/\D/g,'').slice(0,3);if(clean!==t.value)t.value=clean;
     const v=clean===''?null:Math.min(st.max,num(clean));saveRes(r=>{if(v==null)delete r.rows[t.dataset.row];else r.rows[t.dataset.row]=v},false,true)}
 });
@@ -436,6 +473,8 @@ $('plForm').addEventListener('submit',e=>{e.preventDefault();
   $('plNames').value='';if(!names.length)return;
   w(async()=>{const now=Date.now();for(let i=0;i<names.length;i++)await db.collection('players').add({name:names[i],teamId:null,createdAt:now+i})});
 });
+document.addEventListener('submit',e=>{if(e.target.id==='tnForm'){e.preventDefault();saveTeamName()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&e.target.id==='tnIn'){S.editTeam=null;renderDraw()}});
 $('drawForm').addEventListener('submit',e=>{e.preventDefault();if(S.drawing)return;
   if(S.teams.length&&S.armed!=='draw'){S.armed='draw';renderDraw();return}doDraw()});
 
