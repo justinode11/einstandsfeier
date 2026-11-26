@@ -1,12 +1,11 @@
-// Hier die Werte aus der Firebase-Konsole eintragen
-// (Projekteinstellungen → Allgemein → Meine Apps → Web-App → SDK-Konfiguration).
-// Solange hier noch "HIER_EINTRAGEN" steht, läuft die App im Testmodus:
-// Die Daten bleiben dann nur auf dem jeweiligen Gerät.
+// Firebase-Projekt "einstandsfeier-sgf" (Web-App "Einstandsfeier-App").
+// Diese Werte sind laut Firebase kein Geheimnis und duerfen oeffentlich im Repository stehen;
+// geschuetzt werden die Daten durch firestore.rules und den Feier-Schluessel im Link.
 export const firebaseConfig = {
-  apiKey: "HIER_EINTRAGEN",
-  authDomain: "HIER_EINTRAGEN",
-  projectId: "HIER_EINTRAGEN",
-  storageBucket: "HIER_EINTRAGEN",
-  messagingSenderId: "HIER_EINTRAGEN",
-  appId: "HIER_EINTRAGEN"
+  apiKey: "AIzaSyBjryPrXgXWyFZV-mvsG-_OunccZ-6rjaU",
+  authDomain: "einstandsfeier-sgf.firebaseapp.com",
+  projectId: "einstandsfeier-sgf",
+  storageBucket: "einstandsfeier-sgf.firebasestorage.app",
+  messagingSenderId: "233033069317",
+  appId: "1:233033069317:web:3931332c06a6d47101bd6c"
 };
